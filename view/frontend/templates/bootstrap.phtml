@@ -1,0 +1,23 @@
+<?php
+/**
+ * Copyright (c) 2026. Volodymyr Hryvinskyi. All rights reserved.
+ * Author: Volodymyr Hryvinskyi <volodymyr@hryvinskyi.com>
+ * GitHub: https://github.com/hryvinskyi
+ */
+
+use Hryvinskyi\DataLayerFrontendUi\ViewModel\Bootstrap;
+
+/**
+ * The browser module's settings, the page's data layer events, its import map, its preloads and the module itself
+ *
+ * Prints nothing itself: the view model hands every element to the head tag manager, which prints them into
+ * `<head>`. The block stays at the end of the page so the page's event sources run after the rest of the page.
+ *
+ * @var \Magento\Framework\View\Element\Template $block
+ */
+
+$bootstrap = $block->getData('view_model');
+if ($bootstrap instanceof Bootstrap) {
+    $sources = $block->getData('page_event_sources');
+    $bootstrap->registerHeadElements(is_array($sources) ? $sources : []);
+}

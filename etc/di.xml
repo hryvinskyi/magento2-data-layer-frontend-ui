@@ -1,0 +1,148 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright (c) 2026. Volodymyr Hryvinskyi. All rights reserved.
+ * Author: Volodymyr Hryvinskyi <volodymyr@hryvinskyi.com>
+ * GitHub: https://github.com/hryvinskyi
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!-- The signal that server events wait is a cookie written only on responses the page cache never stores, once
+         the response is complete. The queue reports events from storefront actions, the storefront's REST calls (the
+         checkout steps) and GraphQL requests, so the signal is wired for every area. -->
+    <preference for="Hryvinskyi\DataLayer\Api\ServerEventSignalInterface"
+                type="Hryvinskyi\DataLayerFrontendUi\Model\ServerEventCookie"/>
+    <preference for="Hryvinskyi\DataLayerFrontendUi\Api\Signal\PendingSignalInterface"
+                type="Hryvinskyi\DataLayerFrontendUi\Model\ServerEventCookie"/>
+    <preference for="Hryvinskyi\DataLayerFrontendUi\Api\Response\PageCacheabilityInterface"
+                type="Hryvinskyi\DataLayerFrontendUi\Model\Response\PageCacheability"/>
+    <preference for="Hryvinskyi\DataLayerFrontendUi\Api\Response\PublicResponseRecorderInterface"
+                type="Hryvinskyi\DataLayerFrontendUi\Model\Response\PageCacheability"/>
+    <!-- A response declared public may be stored by the full-page cache, so it never carries the signal -->
+    <type name="Magento\Framework\App\Response\Http">
+        <plugin name="hryvinskyi_datalayer_record_public_response"
+                type="Hryvinskyi\DataLayerFrontendUi\Plugin\Framework\RecordPublicResponse"/>
+    </type>
+    <preference for="Hryvinskyi\DataLayerFrontendUi\Api\Session\SessionPresenceInterface"
+                type="Hryvinskyi\DataLayerFrontendUi\Model\Session\CookieSessionPresence"/>
+
+    <!-- Product lists: the data script appended after a rendered list -->
+    <preference for="Hryvinskyi\DataLayerFrontendUi\Api\Lists\ProductListAppenderInterface"
+                type="Hryvinskyi\DataLayerFrontendUi\Model\Lists\ProductListAppender"/>
+
+    <!-- Page events: the sources are view models a layout lists in the bootstrap block's page_event_sources argument -->
+    <preference for="Hryvinskyi\DataLayerFrontendUi\Api\CurrentProductInterface"
+                type="Hryvinskyi\DataLayerFrontendUi\Model\CurrentProduct"/>
+    <virtualType name="HryvinskyiDataLayerViewCartPageEvent"
+                 type="Hryvinskyi\DataLayerFrontendUi\ViewModel\PageEvent\CartPage">
+        <arguments>
+            <argument name="checkoutSession" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
+            <argument name="builder" xsi:type="object">HryvinskyiDataLayerViewCartEventBuilder</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="HryvinskyiDataLayerBeginCheckoutPageEvent"
+                 type="Hryvinskyi\DataLayerFrontendUi\ViewModel\PageEvent\CartPage">
+        <arguments>
+            <argument name="checkoutSession" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
+            <argument name="builder" xsi:type="object">HryvinskyiDataLayerBeginCheckoutEventBuilder</argument>
+        </arguments>
+    </virtualType>
+    <type name="Hryvinskyi\DataLayerFrontendUi\ViewModel\PageEvent\Purchase">
+        <arguments>
+            <argument name="checkoutSession" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
+        </arguments>
+    </type>
+    <type name="Hryvinskyi\DataLayerFrontendUi\ViewModel\PageEvent\MultishippingPurchase">
+        <arguments>
+            <argument name="multishipping" xsi:type="object">Magento\Multishipping\Model\Checkout\Type\Multishipping\Proxy</argument>
+        </arguments>
+    </type>
+    <!-- The Google Ads conversion follows purchase on both success pages, from the same orders -->
+    <virtualType name="HryvinskyiDataLayerAdsConversionPageEvent"
+                 type="Hryvinskyi\DataLayerFrontendUi\ViewModel\PageEvent\Purchase">
+        <arguments>
+            <argument name="purchases" xsi:type="object">HryvinskyiDataLayerAdsConversionPageEvents</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="HryvinskyiDataLayerMultishippingAdsConversionPageEvent"
+                 type="Hryvinskyi\DataLayerFrontendUi\ViewModel\PageEvent\MultishippingPurchase">
+        <arguments>
+            <argument name="purchases" xsi:type="object">HryvinskyiDataLayerAdsConversionPageEvents</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Google tag loaders and the page bootstrap: the loaders' script tags take the attributes listed in
+         scriptAttributes (a module adds the ones a consent manager reads); a store view's own Tag Manager host joins
+         the content security policy -->
+    <type name="Hryvinskyi\DataLayerFrontendUi\ViewModel\GtmLoader">
+        <arguments>
+            <argument name="scriptAttributes" xsi:type="array"/>
+        </arguments>
+    </type>
+    <!-- gtag.js: the Google tags a store view configures through it decide whether it loads at all -->
+    <preference for="Hryvinskyi\DataLayerFrontendUi\Api\Gtag\GtagDestinationsInterface"
+                type="Hryvinskyi\DataLayerFrontendUi\Model\Gtag\GtagDestinations"/>
+    <type name="Magento\Csp\Model\CompositePolicyCollector">
+        <arguments>
+            <argument name="collectors" xsi:type="array">
+                <item name="hryvinskyi_datalayer_gtm_host" xsi:type="object" sortOrder="4">Hryvinskyi\DataLayerFrontendUi\Model\Csp\GtmHostPolicyCollector</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- Browser module: its settings are the parts of the providers pool, keyed by provider (a module adds a provider
+         as an item); its plugins are ES module file ids in sortOrder (a module adds its browser code as an item); its
+         ES modules import one another by the names of the import map (a module adds the modules its plugin imports as
+         items, under a name of its own); a request is the store's own when its origin names the store's host -->
+    <preference for="Hryvinskyi\DataLayerFrontendUi\Api\Browser\BrowserConfigInterface"
+                type="Hryvinskyi\DataLayerFrontendUi\Model\Browser\BrowserConfig"/>
+    <preference for="Hryvinskyi\DataLayerFrontendUi\Api\Browser\PluginUrlsInterface"
+                type="Hryvinskyi\DataLayerFrontendUi\Model\Browser\PluginUrls"/>
+    <preference for="Hryvinskyi\DataLayerFrontendUi\Api\Browser\ImportMapInterface"
+                type="Hryvinskyi\DataLayerFrontendUi\Model\Browser\ImportMap"/>
+    <type name="Hryvinskyi\DataLayerFrontendUi\Model\Browser\ImportMap">
+        <arguments>
+            <argument name="modules" xsi:type="array">
+                <item name="@hryvinskyi/data-layer/push-sequence.js" xsi:type="string">Hryvinskyi_DataLayerFrontendUi::js/data-layer/push-sequence.js</item>
+                <item name="@hryvinskyi/data-layer/list-data.js" xsi:type="string">Hryvinskyi_DataLayerFrontendUi::js/data-layer/list-data.js</item>
+                <item name="@hryvinskyi/data-layer/url-path.js" xsi:type="string">Hryvinskyi_DataLayerFrontendUi::js/data-layer/url-path.js</item>
+                <item name="@hryvinskyi/data-layer/list-scope.js" xsi:type="string">Hryvinskyi_DataLayerFrontendUi::js/data-layer/list-scope.js</item>
+                <item name="@hryvinskyi/data-layer/rendered-box.js" xsi:type="string">Hryvinskyi_DataLayerFrontendUi::js/data-layer/rendered-box.js</item>
+                <item name="@hryvinskyi/data-layer/settings.js" xsi:type="string">Hryvinskyi_DataLayerFrontendUi::js/data-layer/settings.js</item>
+                <item name="@hryvinskyi/data-layer/drain.js" xsi:type="string">Hryvinskyi_DataLayerFrontendUi::js/data-layer/drain.js</item>
+                <item name="@hryvinskyi/data-layer/delivered-ids.js" xsi:type="string">Hryvinskyi_DataLayerFrontendUi::js/data-layer/delivered-ids.js</item>
+                <item name="@hryvinskyi/data-layer/plugins.js" xsi:type="string">Hryvinskyi_DataLayerFrontendUi::js/data-layer/plugins.js</item>
+                <item name="@hryvinskyi/data-layer/beacon-batch.js" xsi:type="string">Hryvinskyi_DataLayerFrontendUi::js/data-layer/beacon-batch.js</item>
+                <item name="@hryvinskyi/data-layer/gtag-commands.js" xsi:type="string">Hryvinskyi_DataLayerFrontendUi::js/data-layer/gtag-commands.js</item>
+            </argument>
+        </arguments>
+    </type>
+    <preference for="Hryvinskyi\DataLayerFrontendUi\Api\Browser\StoreOriginInterface"
+                type="Hryvinskyi\DataLayerFrontendUi\Model\Browser\StoreOrigin"/>
+    <type name="Hryvinskyi\DataLayerFrontendUi\Model\Browser\BrowserConfig">
+        <arguments>
+            <argument name="providers" xsi:type="array">
+                <item name="core" xsi:type="object">Hryvinskyi\DataLayerFrontendUi\Model\Browser\CoreConfigProvider</item>
+                <item name="gtag" xsi:type="object">Hryvinskyi\DataLayerFrontendUi\Model\Browser\GtagConfigProvider</item>
+            </argument>
+        </arguments>
+    </type>
+    <!-- A plugin only some store views load names its condition under the same item name in conditions: the gtag
+         destination feeds gtag.js the data layer's pushes where the page loads gtag.js -->
+    <type name="Hryvinskyi\DataLayerFrontendUi\Model\Browser\PluginUrls">
+        <arguments>
+            <argument name="plugins" xsi:type="array">
+                <item name="gtag_destination" xsi:type="string" sortOrder="10">Hryvinskyi_DataLayerFrontendUi::js/data-layer/gtag-destination.js</item>
+            </argument>
+            <argument name="conditions" xsi:type="array">
+                <item name="gtag_destination" xsi:type="object">Hryvinskyi\DataLayerFrontendUi\Model\Gtag\GtagLoadedCondition</item>
+            </argument>
+            <argument name="imports" xsi:type="array">
+                <item name="gtag_destination" xsi:type="array">
+                    <item name="commands" xsi:type="string">@hryvinskyi/data-layer/gtag-commands.js</item>
+                </item>
+            </argument>
+        </arguments>
+    </type>
+</config>

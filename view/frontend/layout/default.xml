@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright (c) 2026. Volodymyr Hryvinskyi. All rights reserved.
+ * Author: Volodymyr Hryvinskyi <volodymyr@hryvinskyi.com>
+ * GitHub: https://github.com/hryvinskyi
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <!-- The loader and the bootstrap print nothing in place: their view models hand their elements to the head
+             tag manager, which prints them into <head> in a fixed order. The fallback frame must be in <body>. -->
+        <referenceBlock name="head.additional">
+            <block class="Magento\Framework\View\Element\Template" name="hryvinskyi.datalayer.gtm.loader" before="-"
+                   template="Hryvinskyi_DataLayerFrontendUi::gtm/loader.phtml">
+                <arguments>
+                    <argument name="view_model" xsi:type="object">Hryvinskyi\DataLayerFrontendUi\ViewModel\GtmLoader</argument>
+                </arguments>
+            </block>
+        </referenceBlock>
+        <referenceContainer name="after.body.start">
+            <block class="Magento\Framework\View\Element\Template" name="hryvinskyi.datalayer.gtm.noscript" before="-"
+                   template="Hryvinskyi_DataLayerFrontendUi::gtm/noscript.phtml">
+                <arguments>
+                    <argument name="view_model" xsi:type="object">Hryvinskyi\DataLayerFrontendUi\ViewModel\GtmLoader</argument>
+                </arguments>
+            </block>
+        </referenceContainer>
+        <!-- A page adds its events as items of page_event_sources -->
+        <referenceContainer name="before.body.end">
+            <block class="Magento\Framework\View\Element\Template" name="hryvinskyi.datalayer.bootstrap" after="-"
+                   template="Hryvinskyi_DataLayerFrontendUi::bootstrap.phtml">
+                <arguments>
+                    <argument name="view_model" xsi:type="object">Hryvinskyi\DataLayerFrontendUi\ViewModel\Bootstrap</argument>
+                    <argument name="page_event_sources" xsi:type="array"/>
+                </arguments>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

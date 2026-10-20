@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright (c) 2026. Volodymyr Hryvinskyi. All rights reserved.
+ * Author: Volodymyr Hryvinskyi <volodymyr@hryvinskyi.com>
+ * GitHub: https://github.com/hryvinskyi
+ */
+-->
+<!-- Google's tag host serves both Tag Manager's container and gtag.js. The Google Analytics 4 and Google Ads hosts are
+     where the tags send what they collect, whichever loader fired them. -->
+<csp_whitelist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Csp:etc/csp_whitelist.xsd">
+    <policies>
+        <policy id="script-src">
+            <values>
+                <value id="hryvinskyi_datalayer_gtm" type="host">www.googletagmanager.com</value>
+                <value id="hryvinskyi_datalayer_ads_services" type="host">www.googleadservices.com</value>
+                <value id="hryvinskyi_datalayer_ads_conversion" type="host">googleads.g.doubleclick.net</value>
+                <value id="hryvinskyi_datalayer_google" type="host">www.google.com</value>
+            </values>
+        </policy>
+        <policy id="img-src">
+            <values>
+                <value id="hryvinskyi_datalayer_gtm" type="host">www.googletagmanager.com</value>
+                <value id="hryvinskyi_datalayer_ga4" type="host">*.google-analytics.com</value>
+                <value id="hryvinskyi_datalayer_ga4_collect" type="host">*.analytics.google.com</value>
+                <value id="hryvinskyi_datalayer_ads_services" type="host">www.googleadservices.com</value>
+                <value id="hryvinskyi_datalayer_ads_conversion" type="host">googleads.g.doubleclick.net</value>
+                <value id="hryvinskyi_datalayer_doubleclick" type="host">*.g.doubleclick.net</value>
+                <value id="hryvinskyi_datalayer_google" type="host">www.google.com</value>
+            </values>
+        </policy>
+        <policy id="connect-src">
+            <values>
+                <value id="hryvinskyi_datalayer_gtm" type="host">www.googletagmanager.com</value>
+                <value id="hryvinskyi_datalayer_ga4" type="host">*.google-analytics.com</value>
+                <value id="hryvinskyi_datalayer_ga4_collect" type="host">*.analytics.google.com</value>
+                <value id="hryvinskyi_datalayer_ads_services" type="host">www.googleadservices.com</value>
+                <value id="hryvinskyi_datalayer_ads_conversion" type="host">googleads.g.doubleclick.net</value>
+                <value id="hryvinskyi_datalayer_doubleclick" type="host">*.g.doubleclick.net</value>
+                <value id="hryvinskyi_datalayer_google" type="host">www.google.com</value>
+            </values>
+        </policy>
+        <policy id="frame-src">
+            <values>
+                <value id="hryvinskyi_datalayer_gtm" type="host">www.googletagmanager.com</value>
+                <value id="hryvinskyi_datalayer_ads_bid" type="host">bid.g.doubleclick.net</value>
+                <value id="hryvinskyi_datalayer_ads_audience" type="host">td.doubleclick.net</value>
+            </values>
+        </policy>
+    </policies>
+</csp_whitelist>

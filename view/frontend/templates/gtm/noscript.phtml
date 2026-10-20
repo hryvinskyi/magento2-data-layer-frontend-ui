@@ -1,0 +1,26 @@
+<?php
+/**
+ * Copyright (c) 2026. Volodymyr Hryvinskyi. All rights reserved.
+ * Author: Volodymyr Hryvinskyi <volodymyr@hryvinskyi.com>
+ * GitHub: https://github.com/hryvinskyi
+ */
+
+use Hryvinskyi\DataLayerFrontendUi\ViewModel\GtmLoader;
+
+/**
+ * The Google Tag Manager fallback frame for visitors without JavaScript, when the store view loads a container
+ *
+ * @var \Magento\Framework\View\Element\Template $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+$loader = $block->getData('view_model');
+$noscriptUrl = $loader instanceof GtmLoader ? $loader->getNoscriptUrl() : '';
+if ($noscriptUrl === '') {
+    return;
+}
+?>
+<noscript>
+    <iframe src="<?= $escaper->escapeUrl($noscriptUrl) ?>" height="0" width="0"
+            style="display:none;visibility:hidden"></iframe>
+</noscript>

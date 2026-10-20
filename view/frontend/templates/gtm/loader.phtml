@@ -1,0 +1,21 @@
+<?php
+/**
+ * Copyright (c) 2026. Volodymyr Hryvinskyi. All rights reserved.
+ * Author: Volodymyr Hryvinskyi <volodymyr@hryvinskyi.com>
+ * GitHub: https://github.com/hryvinskyi
+ */
+
+use Hryvinskyi\DataLayerFrontendUi\ViewModel\GtmLoader;
+
+/**
+ * The Google tag loaders the store view loads: Tag Manager's container, gtag.js, or both
+ *
+ * Prints nothing itself: the view model hands the loaders to the head tag manager, which prints them into `<head>`.
+ *
+ * @var \Magento\Framework\View\Element\Template $block
+ */
+
+$loader = $block->getData('view_model');
+if ($loader instanceof GtmLoader) {
+    $loader->registerHeadElements();
+}

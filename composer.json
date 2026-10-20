@@ -1,0 +1,38 @@
+{
+    "name": "hryvinskyi/magento2-data-layer-frontend-ui",
+    "description": "Storefront surface of the GA4 data layer: the Tag Manager and gtag.js loaders, the page bootstrap and its browser module (with the gtag.js destination), product list data, the endpoint that hands server-detected events to the browser, and the content security policy for Google's tag, analytics and ads hosts.",
+    "type": "magento2-module",
+    "version": "1.0.0",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Volodymyr Hryvinskyi",
+            "email": "volodymyr@hryvinskyi.com"
+        }
+    ],
+    "require": {
+        "php": "~8.3.0||~8.4.0",
+        "hryvinskyi/magento2-data-layer-api": "^1.0",
+        "hryvinskyi/magento2-data-layer": "^1.0",
+        "hryvinskyi/magento2-head-tag-manager": "^2.3.5",
+        "magento/framework": "*",
+        "magento/module-catalog": "*",
+        "magento/module-catalog-widget": "*",
+        "magento/module-checkout": "*",
+        "magento/module-csp": "*",
+        "magento/module-customer": "*",
+        "magento/module-multishipping": "*",
+        "magento/module-sales": "*",
+        "magento/module-store": "*",
+        "magento/module-theme": "*",
+        "psr/log": "*"
+    },
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Hryvinskyi\\DataLayerFrontendUi\\": ""
+        }
+    }
+}

@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright (c) 2026. Volodymyr Hryvinskyi. All rights reserved.
+ * Author: Volodymyr Hryvinskyi <volodymyr@hryvinskyi.com>
+ * GitHub: https://github.com/hryvinskyi
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceBlock name="hryvinskyi.datalayer.bootstrap">
+            <arguments>
+                <argument name="page_event_sources" xsi:type="array">
+                    <item name="begin_checkout" xsi:type="object">HryvinskyiDataLayerBeginCheckoutPageEvent</item>
+                </argument>
+            </arguments>
+        </referenceBlock>
+    </body>
+</page>

@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright (c) 2026. Volodymyr Hryvinskyi. All rights reserved.
+ * Author: Volodymyr Hryvinskyi <volodymyr@hryvinskyi.com>
+ * GitHub: https://github.com/hryvinskyi
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <!-- Waiting server events: right before a response is sent, the signal is written on a response the full-page
+         cache never stores, and dropped from one it may store -->
+    <event name="controller_front_send_response_before">
+        <observer name="hryvinskyi_datalayer_send_server_event_signal"
+                  instance="Hryvinskyi\DataLayerFrontendUi\Observer\SendServerEventSignal"/>
+    </event>
+</config>

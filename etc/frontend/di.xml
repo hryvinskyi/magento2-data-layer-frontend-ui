@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright (c) 2026. Volodymyr Hryvinskyi. All rights reserved.
+ * Author: Volodymyr Hryvinskyi <volodymyr@hryvinskyi.com>
+ * GitHub: https://github.com/hryvinskyi
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!-- Product lists: each rendered list appends its JSON data script after its own HTML. Catalogue product lists
+         opt in by their name in layout (listContexts); another module adds a list by adding an item. -->
+    <type name="Magento\Catalog\Block\Product\ListProduct">
+        <plugin name="hryvinskyi_datalayer_list_data" type="Hryvinskyi\DataLayerFrontendUi\Plugin\Catalog\ListProductPlugin"/>
+    </type>
+    <type name="Hryvinskyi\DataLayerFrontendUi\Plugin\Catalog\ListProductPlugin">
+        <arguments>
+            <argument name="listContexts" xsi:type="array">
+                <item name="category.products.list" xsi:type="object">Hryvinskyi\DataLayerFrontendUi\Model\Lists\CategoryListContext</item>
+                <item name="search_result_list" xsi:type="object">HryvinskyiDataLayerSearchResultsListContext</item>
+            </argument>
+        </arguments>
+    </type>
+    <virtualType name="HryvinskyiDataLayerSearchResultsListContext"
+                 type="Hryvinskyi\DataLayerFrontendUi\Model\Lists\FixedListContext">
+        <arguments>
+            <argument name="listId" xsi:type="string">search_results</argument>
+            <argument name="listName" xsi:type="string">Search Results</argument>
+        </arguments>
+    </virtualType>
+    <type name="Magento\Catalog\Block\Product\ProductList\Related">
+        <plugin name="hryvinskyi_datalayer_list_data" type="Hryvinskyi\DataLayerFrontendUi\Plugin\Catalog\RelatedPlugin"/>
+    </type>
+    <type name="Magento\Catalog\Block\Product\ProductList\Upsell">
+        <plugin name="hryvinskyi_datalayer_list_data" type="Hryvinskyi\DataLayerFrontendUi\Plugin\Catalog\UpsellPlugin"/>
+    </type>
+    <type name="Magento\Checkout\Block\Cart\Crosssell">
+        <plugin name="hryvinskyi_datalayer_list_data" type="Hryvinskyi\DataLayerFrontendUi\Plugin\Checkout\CrosssellPlugin"/>
+    </type>
+    <type name="Magento\CatalogWidget\Block\Product\ProductsList">
+        <plugin name="hryvinskyi_datalayer_list_data"
+                type="Hryvinskyi\DataLayerFrontendUi\Plugin\CatalogWidget\ProductsListPlugin"/>
+    </type>
+
+    <!-- The module's own storefront route (the endpoints that hand queued events to the browser and remove the ones it
+         pushed) records no visitor row: the browser posts to it after the shopper's own actions, and a visitor row per
+         post would double the writes those actions cost -->
+    <type name="Magento\Customer\Model\Visitor">
+        <arguments>
+            <argument name="ignores" xsi:type="array">
+                <item name="hryvinskyi_datalayer" xsi:type="boolean">true</item>
+            </argument>
+        </arguments>
+    </type>
+    <!-- The module's own endpoints set the queue's signal themselves, so the check for waiting events skips them -->
+    <type name="Hryvinskyi\DataLayerFrontendUi\Observer\SendServerEventSignal">
+        <arguments>
+            <argument name="ignoredRoutes" xsi:type="array">
+                <item name="hryvinskyi_datalayer" xsi:type="boolean">true</item>
+            </argument>
+        </arguments>
+    </type>
+    <!-- The endpoints of the visitor's event queue never start a session for a visitor who has none: they answer that
+         nothing waits -->
+    <type name="Magento\Framework\Session\SessionStartChecker">
+        <plugin name="hryvinskyi_datalayer_sessionless_drain"
+                type="Hryvinskyi\DataLayerFrontendUi\Plugin\Session\KeepQueueEndpointsSessionless"/>
+    </type>
+    <type name="Hryvinskyi\DataLayerFrontendUi\Plugin\Session\KeepQueueEndpointsSessionless">
+        <arguments>
+            <argument name="routes" xsi:type="array">
+                <item name="drain" xsi:type="const">Hryvinskyi\DataLayerFrontendUi\Controller\Events\Drain::ROUTE</item>
+                <item name="acknowledge" xsi:type="const">Hryvinskyi\DataLayerFrontendUi\Controller\Events\Acknowledge::ROUTE</item>
+            </argument>
+        </arguments>
+    </type>
+</config>
