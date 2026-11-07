@@ -9,11 +9,22 @@ declare(strict_types=1);
 
 namespace Hryvinskyi\DataLayerFrontendUi\Test\Unit\ViewModel;
 
+use Hryvinskyi\Base\Model\Html\AttributeRenderer;
+use Hryvinskyi\Base\Model\Html\CssOptions;
+use Hryvinskyi\Base\Model\Html\HtmlEncoder;
+use Hryvinskyi\Base\Model\Html\TextConverter;
+use Hryvinskyi\Base\Model\Json\JsonEncoder;
 use Hryvinskyi\HeadTagManager\Model\HeadElement\Factory\LinkElementFactory;
 use Hryvinskyi\HeadTagManager\Model\HeadElement\Factory\ScriptElementFactory;
+use Hryvinskyi\HeadTagManager\Model\HeadElement\LinkElement;
+use Hryvinskyi\HeadTagManager\Model\HeadElement\LinkElementFactory as LinkElementObjectFactory;
+use Hryvinskyi\HeadTagManager\Model\HeadElement\ScriptElement;
+use Hryvinskyi\HeadTagManager\Model\HeadElement\ScriptElementFactory as ScriptElementObjectFactory;
 use Hryvinskyi\HeadTagManager\Model\HeadTagManager;
 use Hryvinskyi\HeadTagManager\Model\Registry\HeadElementFactoryRegistry;
+use Magento\Framework\Escaper;
 use Magento\Framework\View\Helper\SecureHtmlRenderer;
+use Magento\Framework\ZendEscaper;
 
 /**
  * The head tag manager the storefront uses, with its script and link elements, over a secure renderer that prints
@@ -45,9 +56,70 @@ trait HeadTags
             }
         );
 
+        $textConverter = new TextConverter();
+        $attributeRenderer = new AttributeRenderer(
+            new HtmlEncoder(new ZendEscaper(), new Escaper()),
+            new JsonEncoder(),
+            new CssOptions($textConverter, true),
+            $textConverter,
+            [
+                'type',
+                'id',
+                'class',
+                'name',
+                'value',
+
+                'href',
+                'src',
+                'srcset',
+                'form',
+                'action',
+                'method',
+
+                'selected',
+                'checked',
+                'readonly',
+                'disabled',
+                'multiple',
+
+                'size',
+                'maxlength',
+                'width',
+                'height',
+                'rows',
+                'cols',
+
+                'alt',
+                'title',
+                'rel',
+                'media',
+                    ],
+            ['aria', 'data', 'data-ng', 'ng'],
+            true
+        );
+        $scripts = $this->createMock(ScriptElementObjectFactory::class);
+        $scripts->method('create')->willReturnCallback(
+            static fn (array $data): ScriptElement => new ScriptElement(
+                $secureRenderer,
+                $attributeRenderer,
+                $data['attributes'],
+                $data['content'],
+                $data['sortOrder']
+            )
+        );
+        $links = $this->createMock(LinkElementObjectFactory::class);
+        $links->method('create')->willReturnCallback(
+            static fn (array $data): LinkElement => new LinkElement(
+                $secureRenderer,
+                $attributeRenderer,
+                $data['attributes'],
+                $data['sortOrder']
+            )
+        );
+
         return new HeadTagManager(new HeadElementFactoryRegistry([
-            new ScriptElementFactory($secureRenderer),
-            new LinkElementFactory($secureRenderer),
+            new ScriptElementFactory($scripts),
+            new LinkElementFactory($links),
         ]));
     }
 
