@@ -23,8 +23,10 @@ use Hryvinskyi\HeadTagManager\Model\HeadElement\ScriptElementFactory as ScriptEl
 use Hryvinskyi\HeadTagManager\Model\HeadTagManager;
 use Hryvinskyi\HeadTagManager\Model\Registry\HeadElementFactoryRegistry;
 use Magento\Framework\Escaper;
+use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Framework\View\Helper\SecureHtmlRenderer;
 use Magento\Framework\ZendEscaper;
+use Psr\Log\NullLogger;
 
 /**
  * The head tag manager the storefront uses, with its script and link elements, over a secure renderer that prints
@@ -97,30 +99,25 @@ trait HeadTags
             ['aria', 'data', 'data-ng', 'ng'],
             true
         );
+        // The module's element factories create an element with no data and apply attributes, content and sort order
+        // through its setters, so the generated factories answer an element built with its renderers alone.
         $scripts = $this->createMock(ScriptElementObjectFactory::class);
         $scripts->method('create')->willReturnCallback(
-            static fn (array $data): ScriptElement => new ScriptElement(
-                $secureRenderer,
-                $attributeRenderer,
-                $data['attributes'],
-                $data['content'],
-                $data['sortOrder']
-            )
+            static fn (): ScriptElement => new ScriptElement($attributeRenderer, $secureRenderer)
         );
         $links = $this->createMock(LinkElementObjectFactory::class);
         $links->method('create')->willReturnCallback(
-            static fn (array $data): LinkElement => new LinkElement(
-                $secureRenderer,
-                $attributeRenderer,
-                $data['attributes'],
-                $data['sortOrder']
-            )
+            static fn (): LinkElement => new LinkElement($attributeRenderer, $secureRenderer)
         );
 
-        return new HeadTagManager(new HeadElementFactoryRegistry([
-            new ScriptElementFactory($scripts),
-            new LinkElementFactory($links),
-        ]));
+        return new HeadTagManager(
+            new HeadElementFactoryRegistry([
+                new ScriptElementFactory($scripts),
+                new LinkElementFactory($links),
+            ]),
+            new Json(),
+            new NullLogger()
+        );
     }
 
     /**
